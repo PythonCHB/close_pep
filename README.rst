@@ -1,4 +1,5 @@
-# close_pep
+close_pep
+===========
 
 Documentation and code for a Python PEP about an appoximate equal check for Python
 
@@ -8,4 +9,4 @@ https://mail.python.org/pipermail/python-ideas/2015-January/030947.html
 
 This repo serves as a place to experiment with implimentations, and to cooperate on the drafting of a PEP.
 
- - Chris
+ -- Chris
