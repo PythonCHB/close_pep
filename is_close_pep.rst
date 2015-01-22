@@ -15,21 +15,22 @@ Abstract
 ========
 
 This PEP proposes the addition of a function to the standard library
-that determines whether two values are approximately equal or "close"
-to each other. 
+that determines whether one value is approximately equal or "close"
+to another value. 
 
 Rationale
 =========
 
 Floating point values contain limited precision, which results in
 their being unable to exactly represent some values, and for error to
-accumulate with repeated computation.  As a result, it is common advice
-to only use an equality comparison in very specific situations.  Often
-a inequality comparison fits the bill, but there are times (often in
-testing) where the programmer wants to determine whether two values
-are "close" to each other, without requiring them to be exactly equal.
-This is common enough, particularly in testing, and not always obvious
-how to do it, so it would be useful addition to the standard library.
+accumulate with repeated computation.  As a result, it is common
+advice to only use an equality comparison in very specific situations.
+Often a inequality comparison fits the bill, but there are times
+(often in testing) where the programmer wants to determine whether a
+computed value is "close" to an expected value, without requiring them
+to be exactly equal. This is common enough, particularly in testing,
+and not always obvious how to do it, so it would be useful addition to
+the standard library.
 
 
 Existing Implementations
@@ -64,8 +65,71 @@ Proposed Implementation
 NOTE: this PEP is the result of an extended discussion on the
 python-ideas list [1]_.
 
-Relative Difference
+The new function will have the following signature::
+
+  is_close_to(actual, expected, tol=1e-8, abs_tol=0.0)
+
+``actual``: is the value that has been computed, measured, etc.
+
+``expected``: is the "known" value.
+
+``tol``: is the relative tolerance -- it is the amount of error allowed,
+relative to the magnitude of the expected value.
+
+``abs_tol``: is an minimum absolute tolerance level -- useful for
+comparisons near zero.
+
+Modulo error checking, etc, the function will return the result of::
+
+    abs(expected-actual) <= max(tol*actual, abs_tol)
+
+
+Handling of non-finite numbers
+-------------------------------
+
+The IEEE 754 special values of NaN, inf, and -inf will be handled
+according to IEEE rules. Specifically, NaN is not considered close to
+any other value, including NaN. inf and -inf are only considered close
+to themselves.
+
+
+Non-float types
+----------------
+
+The primary use-case is expected to be floating point numbers.
+However, users may want to compare other numeric types similarly. In
+theory, it should work for any type that supports ``abs()``,
+comparisons, and subtraction.  The code will be written and tested to
+accommodate these types:
+
+ * ``Decimal``
+
+ * ``int``
+
+ * ``Fraction``
+ 
+ * ``complex``: for complex, ``abs(z)`` will be used for scaling and
+   comparison.
+
+Behavior near zero.
 -------------------
+
+Relative comparison is problematic if either value is zero. In this
+case, the difference is relative to zero, and thus will always be
+smaller than the prescribed tolerance. To handle this case, an
+optional parameter, ``abs_tol`` (default 0.0) can be used to set a
+minimum tolerance to be used in the case of very small relative
+tolerance. That is the values will be considered close if::
+
+    abs(a-b) <= abs(tol*actual) or abs(a-b) <= abs_tol
+
+If the user sets the rel_tol parameter to 0.0, then only the absolute
+tolerance will effect the result, so this function provides an
+absolute tolerance check as well.
+
+
+Relative Difference
+====================
 
 There are essentially two ways to think about how close two numbers
 are to each-other: absolute difference: simple ``abs(a-b)``, and relative
@@ -84,71 +148,52 @@ consideration, for instance:
  4) The arithmetic mean of the two
 
 Symmetry
---------
+---------
 
-An advantage of using a particular input value is that it is easy
-reason about and answer the question: is the value of a within x% of
-b? -- Using b to scale the percent error clearly defines the result.
-However, this approach is not symmetric, a may be within 10% of b, but
-b is not within x% of a. Consider the case::
+A relative comparison can be either symmetric or non-symmetric. For a
+symmetric algorithm:
+
+``is_close_to(a,b)`` is always equal to is_close_to(b,a)
+
+This is an appealing consistence -- it mirrors the symmetry of
+equality, and is less likely to confuse people. However, often the
+question at hand is:
+
+"Is this computed or measured value within some tolerance of a known
+value?"
+
+In this case, the user wants the relative tolerance to be specifically
+scaled against the known value. It is also easier for the user to
+reason about.
+
+This proposal uses this asymmetric test to allow this specific
+definition of relative tolerance.
+
+Example:
+
+For the question: "Is the value of a within x% of b?", Using b to
+scale the percent error clearly defines the result.
+
+However, as this approach is not symmetric, a may be within 10% of b,
+but b is not within x% of a. Consider the case::
 
   a =  9.0
   b = 10.0
 
 The difference between a and b is 1.0. 10% of a is 0.9, so b is not
-within 10% of a. But 10% of b is 10.0, so a is within 10% of b. So
-this criteria is not symmetric.
+within 10% of a. But 10% of b is 10.0, so a is within 10% of b. 
 
 Casual users might reasonably expect that if a is close to b, then b
-would also be close to a. the criteria that use both values are
-symmetric, and thus less likely to lead to surprises.
+would also be close to a. However, in the common cases, the tolerance
+is quite small and often poorly defined, i.e. 1e-8, defined to only
+one significant figure, so the result will be very similar regardless
+of the order of the values. And if the user does care about the
+precise result, s/he can take care to always pass in the two
+parameters in sorted order.
 
-This proposed implementation uses the minimum absolute value of the
-two values, as it leads to the most strict symmetric solution. This is
-known as the "strong" case in the Boost documentation [3]
+This proposed implementation uses asymmetric criteria with the scaling
+value clearly identified.
 
-Behavior near zero.
--------------------
-
-Relative comparison is problematic if either value is zero. In this
-case, the difference is relative to zero, and thus will always be
-smaller than the prescribe tolerance. To handle this case, an optional
-parameter, ``abs_tol`` (default 0.0) can be used to set a minimum
-tolerance to be used in the case of very small relative tolerance.
-That is the values will be considered close if::
-
-    abs(a-b) <= relative_tolerance or abs(a-b) <= abs_tol
-
-If the user sets the rel_tol parameter to 0.0, then only the absolute
-tolerance will be used.
-
-
-Handling of non-real numbers
-----------------------------
-
-The IEEE 754 special values of NaN, inf, and -inf will be handled
-according to IEEE rules. Specifically, NaN is not considered close to
-any other value, including NaN. inf and -inf are only considered close
-to themselves.
-
-
-Non-float types
-----------------
-
-The primary use-case is expected to be floating point numbers.
-However, users may want to compare other numeric types similarly. In
-theory, it should work for any type that supports ``abs()``,
-comparisons, and division.  The code will be written and tested to
-accommodate these types:
-
- * ``Decimal``
-
- * ``int``
-
- * ``Fraction``
- 
- * ``complex``: for complex, the abs() will be used for scaling and
-   comparison.
 
 Expected Uses
 =============
@@ -172,26 +217,70 @@ may prove useful in such situations, It is not intended to be used in
 that way.
 
 
-
 Other Approaches
 ================
 
-Expected Use Cases
-==================
+``unittest.TestCase.assertAlmostEqual``
+---------------------------------------
 
+(https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertAlmostEqual)
 
-.. _Docutils:
-.. _Docutils project web site: http://docutils.sourceforge.net/
-.. _post a message:
-   mailto:docutils-users@lists.sourceforge.net?subject=PEPs
-.. _Docutils-users mailing list:
-   http://docutils.sf.net/docs/user/mailing-lists.html#docutils-users
+Tests that values are approximately (or not approximately) equal by
+computing the difference, rounding to the given number of decimal
+places (default 7), and comparing to zero.
 
+This method was not selected for this proposal, as the use of decimal
+digits is a specific, not generally useful or flexible test.
+
+numpy ``is_close()``
+---------------------
+
+http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.isclose.html
+
+The numpy package provides the vectorized functions is_close() and
+all_close, for similar use cases as this proposal:
+
+``isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False)``
+
+      Returns a boolean array where two arrays are element-wise equal
+      within a tolerance.
+
+      The tolerance values are positive, typically very small numbers.
+      The relative difference (rtol * abs(b)) and the absolute
+      difference atol are added together to compare against the
+      absolute difference between a and b
+
+In this approach, the absolute and relative tolerance are added
+together, rather than the ``or`` method used in this proposal. This is
+computationally more simple, and if relative tolerance is larger than
+the absolute tolerance, then the addition will have no effect. But if
+the absolute and relative tolerances are of similar magnitude, then
+the allowed difference will be about twice as large as expected.
+
+Also, if the value passed in are small compared to the absolute
+tolerance, then the relative tolerance will be completely swamped,
+perhaps unexpectedly.
+
+This is why, in this proposal, the absolute tolerance defaults to zero
+-- the user will be required to choose a value appropriate for the
+values at hand.
+
+Boost floating-point comparison
+--------------------------------
+
+The Boost project ( [3]_ ) provides a floating point comparison
+function. Is is a symetric approach, with both "weak" (larger of the
+two relative errors) and "strong" (smaller of the two relative errors)
+options.
+
+It was decided that a method that clearly defined which value was used
+to scale the relative error would be more appropriate for the standard
+library.
 
 References
 ==========
 
-.. [1] Python-idea list discussion thread
+.. [1] Python-ideas list discussion thread
    (https://mail.python.org/pipermail/python-ideas/2015-January/030947.html)
 
 .. [2] Wikipedaia page on relative difference
