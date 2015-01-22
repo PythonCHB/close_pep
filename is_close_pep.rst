@@ -81,7 +81,7 @@ comparisons near zero.
 
 Modulo error checking, etc, the function will return the result of::
 
-    abs(expected-actual) <= max(tol*actual, abs_tol)
+    abs(expected-actual) <= max(tol*expected, abs_tol)
 
 
 Handling of non-finite numbers
@@ -121,7 +121,7 @@ optional parameter, ``abs_tol`` (default 0.0) can be used to set a
 minimum tolerance to be used in the case of very small relative
 tolerance. That is the values will be considered close if::
 
-    abs(a-b) <= abs(tol*actual) or abs(a-b) <= abs_tol
+    abs(a-b) <= abs(tol*expected) or abs(a-b) <= abs_tol
 
 If the user sets the rel_tol parameter to 0.0, then only the absolute
 tolerance will effect the result, so this function provides an
