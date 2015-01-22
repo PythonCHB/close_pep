@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 """
+NOTE: this is an early proposal, using a symetric approach -- an asymetric
+approach seems to be prefered -- see is_close_to.py
+
 A proposed implementation for an "is_close" implementation for floating point
 (and complex) numbers for python.
 
@@ -123,7 +126,8 @@ if __name__ == "__main__":
                          (inf, 1.0),
                          (1e300, inf),
                          (-inf, -1e300),
-                         (-1e305, -inf)
+                         (-1e305, -inf),
+                         (-inf, inf)
                          ]
     tol = 1e-13
     min_tol = 1e-12  # very small should hold.

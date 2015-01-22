@@ -129,6 +129,10 @@ If the user sets the rel_tol parameter to 0.0, then only the absolute
 tolerance will effect the result, so this function provides an
 absolute tolerance check as well.
 
+A sample implementation is available (as of Jan 22, 2015) on gitHub:
+
+https://github.com/PythonCHB/close_pep/blob/master/is_close_to.py
+
 
 Relative Difference
 ===================
