@@ -1,14 +1,14 @@
-PEP: XXX
-Title: An Function for Testing Approximate Equality
+PEP: 485
+Title: A Function for testing approximate equality
 Version: $Revision$
 Last-Modified: $Date$
 Author: Christopher Barker <Chris.Barker@noaa.gov>
 Status: Draft
 Type: Standards Track
-Python-Version: 3.5
 Content-Type: text/x-rst
 Created: 20-Jan-2015
-Post-History: 30-Aug-2002
+Python-Version: 3.5
+Post-History:
 
 
 Abstract
@@ -16,7 +16,8 @@ Abstract
 
 This PEP proposes the addition of a function to the standard library
 that determines whether one value is approximately equal or "close"
-to another value. 
+to another value.
+
 
 Rationale
 =========
@@ -73,8 +74,8 @@ The new function will have the following signature::
 
 ``expected``: is the "known" value.
 
-``tol``: is the relative tolerance -- it is the amount of error allowed,
-relative to the magnitude of the expected value.
+``tol``: is the relative tolerance -- it is the amount of error
+allowed, relative to the magnitude of the expected value.
 
 ``abs_tol``: is an minimum absolute tolerance level -- useful for
 comparisons near zero.
@@ -85,7 +86,7 @@ Modulo error checking, etc, the function will return the result of::
 
 
 Handling of non-finite numbers
--------------------------------
+------------------------------
 
 The IEEE 754 special values of NaN, inf, and -inf will be handled
 according to IEEE rules. Specifically, NaN is not considered close to
@@ -94,7 +95,7 @@ to themselves.
 
 
 Non-float types
-----------------
+---------------
 
 The primary use-case is expected to be floating point numbers.
 However, users may want to compare other numeric types similarly. In
@@ -102,24 +103,25 @@ theory, it should work for any type that supports ``abs()``,
 comparisons, and subtraction.  The code will be written and tested to
 accommodate these types:
 
- * ``Decimal``
+* ``Decimal``
 
- * ``int``
+* ``int``
 
- * ``Fraction``
+* ``Fraction``
  
- * ``complex``: for complex, ``abs(z)`` will be used for scaling and
-   comparison.
+* ``complex``: for complex, ``abs(z)`` will be used for scaling and
+  comparison.
 
-Behavior near zero.
--------------------
+
+Behavior near zero
+------------------
 
 Relative comparison is problematic if either value is zero. In this
 case, the difference is relative to zero, and thus will always be
 smaller than the prescribed tolerance. To handle this case, an
 optional parameter, ``abs_tol`` (default 0.0) can be used to set a
 minimum tolerance to be used in the case of very small relative
-tolerance. That is the values will be considered close if::
+tolerance. That is, the values will be considered close if::
 
     abs(a-b) <= abs(tol*actual) or abs(a-b) <= abs_tol
 
@@ -129,33 +131,35 @@ absolute tolerance check as well.
 
 
 Relative Difference
-====================
+===================
 
 There are essentially two ways to think about how close two numbers
-are to each-other: absolute difference: simple ``abs(a-b)``, and relative
-difference: ``abs(a-b)/scale_factor`` [2]_. The absolute difference is
-trivial enough that this proposal focuses on the relative difference.
+are to each-other: absolute difference: simply ``abs(a-b)``, and
+relative difference: ``abs(a-b)/scale_factor`` [2]_. The absolute
+difference is trivial enough that this proposal focuses on the
+relative difference.
 
 Usually, the scale factor is some function of the values under
 consideration, for instance: 
 
- 1) The absolute value of one of the input values
+1) The absolute value of one of the input values
 
- 2) The maximum absolute value of the two
+2) The maximum absolute value of the two
 
- 3) The minimum absolute value of the two.
+3) The minimum absolute value of the two.
 
- 4) The arithmetic mean of the two
+4) The arithmetic mean of the two
+
 
 Symmetry
----------
+--------
 
 A relative comparison can be either symmetric or non-symmetric. For a
 symmetric algorithm:
 
-``is_close_to(a,b)`` is always equal to is_close_to(b,a)
+``is_close_to(a,b)`` is always equal to ``is_close_to(b,a)``
 
-This is an appealing consistence -- it mirrors the symmetry of
+This is an appealing consistency -- it mirrors the symmetry of
 equality, and is less likely to confuse people. However, often the
 question at hand is:
 
@@ -181,7 +185,7 @@ but b is not within x% of a. Consider the case::
   b = 10.0
 
 The difference between a and b is 1.0. 10% of a is 0.9, so b is not
-within 10% of a. But 10% of b is 10.0, so a is within 10% of b. 
+within 10% of a. But 10% of b is 1.0, so a is within 10% of b. 
 
 Casual users might reasonably expect that if a is close to b, then b
 would also be close to a. However, in the common cases, the tolerance
@@ -205,6 +209,7 @@ may or may not be part of a formal unit testing suite.
 The function might be used also to determine if a measured value is
 within an expected value.
 
+
 Inappropriate uses
 ------------------
 
@@ -212,7 +217,7 @@ One use case for floating point comparison is testing the accuracy of
 a numerical algorithm. However, in this case, the numerical analyst
 ideally would be doing careful error propagation analysis, and should
 understand exactly what to test for. It is also likely that ULP (Unit
-in the last Place) comparison may be called for. While this function
+in the Last Place) comparison may be called for. While this function
 may prove useful in such situations, It is not intended to be used in
 that way.
 
@@ -233,7 +238,7 @@ This method was not selected for this proposal, as the use of decimal
 digits is a specific, not generally useful or flexible test.
 
 numpy ``is_close()``
----------------------
+--------------------
 
 http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.isclose.html
 
@@ -265,8 +270,9 @@ This is why, in this proposal, the absolute tolerance defaults to zero
 -- the user will be required to choose a value appropriate for the
 values at hand.
 
+
 Boost floating-point comparison
---------------------------------
+-------------------------------
 
 The Boost project ( [3]_ ) provides a floating point comparison
 function. Is is a symetric approach, with both "weak" (larger of the
@@ -288,6 +294,7 @@ References
 
 .. [3] Boost project floating-point comparison algorithms
    (http://www.boost.org/doc/libs/1_35_0/libs/test/doc/components/test_tools/floating_point_comparison.html)
+
 
 Copyright
 =========
