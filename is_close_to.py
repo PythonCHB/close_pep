@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """
-An implimentaion for an is_close_to() function, for possible inclusion in
-the Python standrad library.
+An implementation for an is_close_to() function, for possible inclusion in
+the Python standard library.
 
-This implimentation is the result of much discussion on the python-ideas list
+This implementation is the result of much discussion on the python-ideas list
 in January, 2015:
 
 https://mail.python.org/pipermail/python-ideas/2015-January/030947.html
