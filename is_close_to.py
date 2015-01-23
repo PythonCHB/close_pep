@@ -47,10 +47,8 @@ def is_close_to(actual, expected, tol=1e-8, abs_tol=0.0):
         return False
 
     diff = abs(expected-actual)
-    print ("diff:", diff)
-    print ("rel_tol:", abs(tol*expected))
-    print ("abs_tol:", abs_tol)
-    print (diff <= abs(tol*expected))
-    print (diff <= abs_tol)
+    # print ("diff:", diff)
+    # print ("rel_tol:", abs(tol*expected))
+    # print ("abs_tol:", abs_tol)
     return (diff <= abs(tol*expected)) or (diff <= abs_tol)
 

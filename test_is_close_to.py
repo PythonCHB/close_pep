@@ -52,6 +52,7 @@ class RelativeTestCase(CloseTestCase):
 
     nums8 = [(1e9, 1e9+1),
              (-1e-9, -1.000000001e-9),
+             (1.12345677, 1.12345678),
              ]
 
     def test_nums8_close(self):
@@ -130,6 +131,20 @@ class ComplexTests(CloseTestCase):
     def test_not_close(self):
         for a,b in self.close_examples:
             self.do_not_close(a, b, tol=1e-14)
+
+
+class TestInteger(CloseTestCase):
+    close_examples = [(100000001, 100000000),
+                      (123456789, 123456788)
+                      ]
+
+    def test_close(self):
+        for a,b in self.close_examples:
+            self.do_close(a, b, tol=1e-8)
+
+    def test_not_close(self):
+        for a,b in self.close_examples:
+            self.do_not_close(a, b, tol=1e-9)
 
 
 class TestDecimal(CloseTestCase):

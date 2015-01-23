@@ -103,7 +103,7 @@ theory, it should work for any type that supports ``abs()``,
 comparisons, and subtraction.  The code will be written and tested to
 accommodate these types:
 
-* ``Decimal``
+* ``Decimal``: for Decimal, the tolerance must be set to a Decimal type.
 
 * ``int``
 
