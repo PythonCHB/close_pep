@@ -187,5 +187,7 @@ class TestZeroTol(CloseTestCase):
         self.do_not_close(1.000001e-8, 0.0, zero_tol=1e-8)
 
     def test_small_relative(self):
-        self.do_close(1.000001e-8, 1e-10)
+        ## note: this highlights a key issue:
+        ##       it's close to zero, but not to a small number???
+        self.do_not_close(1.000001e-8, 1e-10, zero_tol=1e-8)
 
