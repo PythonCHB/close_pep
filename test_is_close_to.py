@@ -76,7 +76,7 @@ class ZeroTestCase(CloseTestCase):
     def test_nums8_not_close(self):
         # these should not be close to any tol
         for a, b in self.nums8:
-            self.do_not_close(a, b, 1)
+            self.do_not_close(a, b, 1, zero_tol=0.0)
 
     def test_nums8_close(self):
         # these should be close to abs_tol=1e-8
@@ -174,5 +174,18 @@ class TestFraction(CloseTestCase):
         for a,b in self.close_examples:
             self.do_not_close(a, b, tol=1e-9)
 
+class TestZeroTol(CloseTestCase):
+    # test the zero_tol parameter
+    close_examples = [(0.99999e-8, 0.0),
+                      (0.0, 0.99999e-8),
+                      ]
+    def test_small_value(self):
+        for a,b in self.close_examples:
+            self.do_close(a, b, zero_tol=1e-8)
 
+    def test_not_quite_small(self):
+        self.do_not_close(1.000001e-8, 0.0, zero_tol=1e-8)
+
+    def test_small_relative(self):
+        self.do_close(1.000001e-8, 1e-10)
 
