@@ -33,7 +33,7 @@ def is_close_to(actual, expected, tol=1e-8, abs_tol=0.0):
     NOTE: -inf, inf and NaN behave according to the IEEE 754 Standard
 
     """
-    print("testing:", actual, expected)
+    # print("testing:", actual, expected)
     if tol < 0.0 or abs_tol < 0.0:
         raise ValueError('error tolerances must be non-negative')
 
