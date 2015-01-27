@@ -70,17 +70,6 @@ def disp(k, omega, h, g=9.806):
     """
     return omega**2 / (g * math.tanh(k * h))
 
-def dispersion(omega, h, g=9.806):
-    "compute the dispersion relation"
-
-    k_1 = 10.0 # initial guess
-    while True:
-        k_2 = omega**2 / (g * math.tanh(k_1 * h))
-        if is_close_to(k_2, k_1, tol=1e-12):
-            break
-        k_1 = k_2
-    return k_1
-
 if __name__ == "__main__":
 
     #Try it for a few values:
