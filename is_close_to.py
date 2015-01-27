@@ -28,7 +28,7 @@ def is_close_to(actual, expected, rel_tolerance=1e-8, abs_tolerance=0.0):
                      value.
 
     :param abs_tolerance=0.0: the minimum absolute tolerance level -- useful for
-                        comparisons near zero.
+                        comparisons to zero.
 
     NOTES:
 

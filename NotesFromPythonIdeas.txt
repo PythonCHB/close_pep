@@ -1,0 +1,102 @@
+Issues from python-ideas discussion:
+
+Jan 22-24: (58 messages!)
+
+Docs: better descriprion for tolernace parameters: maybe an example with % differnce?
+
+maybe a 1e-8 tolerance meand about 8 decimal digits? - fixed
+
+or
+
+For example, to set a tolerance of 5%, pass tol=0.05. The default tolerance is 1e-8." - fixed.
+
+Described zero case unclearly -- fixed!
+
+Better names for "actual" and "expected" -- especially "actual" -- one suggestion: (noi, target) -- "noi == number of interest"
+
+Document another use case -- general iterative solution to an implicit function? Or Skip's example of mathicn cacluation to fixed price points.
+
+More on AssertAlmostEqual -- NOT a relative test -- only strictly decimal places: Nathanial: "almost broken" : "I might phrase this a bit more strongly -- assertAlmostEqual is
+confusing and broken-by-default for common cases like comparing two
+small values, or comparing two large values."
+
+Alternate Proposals:
+  - zero_tol
+  - ulps-based
+  - others?
+
+casual text:
+"""
+  We need a floating comparison function that's good enough for
+    government work, to help naive users avoid writing "x == y" for
+    floating point comparisons.  There are use cases where one of the
+    values is a known accurate value, so the comparison function is
+    asymmetric.  This generally won't get things "too wrong" for
+    symmetric comparisons, except where a relative comparison involves
+    true values near zero.  Unfortunately, not much can be done in
+    that case because it requires enough domain knowledge to realize
+    that true values near zero occur and that this is a problem, so
+    use of this function is covered by "consenting adults".[2]
+"""
+
+"""
+Note that the key requirement here should be "provide a binary float
+comparison function that is significantly less wrong than the current
+'a == b'".
+
+"a == b" is the competition here, not the more correct versions
+available in other libraries.
+"""
+
+"""
+The reason I view the proposal in the PEP as problematic is because it
+is approaching the problem *like a scientist*, rather than as someone
+who last studied math in high school. The unittest module definition
+relies on a very simple set of assumptions:
+
+1. The user understands how arithmetic subtraction works
+2. The user understands how decimal rounding works
+3. The user understands how absolute deltas work
+
+This is a "good enough" answer that handles a wide variety of real
+world use cases, and is very easy to understand. Most importantly, it
+provides a hint that when working with floating point numbers, "==" is
+likely to cause you grief.
+
+This simple definition *isn't* really good enough for statistical or
+scientific use cases, but in those cases you should be using a
+statistical or scientific computation library with a more
+sophisticated definition of near equality.
+"""
+"""
+I would personally find the PEP more persuasive if it was framed in
+terms of providing an improved definition of assertAlmostEqual that
+better handles the limitations of binary floating point dynamic
+ranges.
+
+The fact that unittest.assertAlmostEqual is in the standard library
+implies that any improvement to it must also be in the standard
+library, and moving the definition of near equality that unittest uses
+out to the math module so it is reusable in other contexts makes sense
+to me, especially if it means being able to share the definition
+between unittest and the statistics module.
+"""
+
+
+Issues:
+
+Doesn't do rigorous ulp comparison -- I think it's simply not designed for that.
+
+Should this be an update/addition/pulled out function from the unittest one? I think there is a general consensus no -- though we might want something in unitest to use it.
+
+Compatiblility with numpy -- some have suggested, anyone think this is a blocker?
+
+What do do about comparison to zero? From Nathanial:
+"(I just did a quick look at uses of python code uses of assertAlmostEqual on github, and in my unscientific survey of reading
+the first page of results, 30.4% of the calls were comparisons against
+zero. IMO asking all these people to specify tolerances by hand on
+every call is not very nice.)"
+ - key here is how special is order 1 and larger?
+
+
+
