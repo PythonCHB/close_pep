@@ -15,11 +15,15 @@ License: Apache License 2.0 http://opensource.org/licenses/apache2.0.php
 """
 import math, cmath
 
-def is_close_to(actual, expected, rel_tolerance=1e-8, abs_tolerance=0.0):
+def is_close_to(test_val,
+                expected,
+                rel_tolerance=1e-8,
+                abs_tolerance=0.0,
+                method = 'asymmetric'):
     """
-    returns True if actual is close in value to expected. False otherwise
+    returns True if test_val is close in value to expected. False otherwise
 
-    :param actual: the value that has been computed, measured, etc.
+    :param test_val: the value that has been computed, measured, etc.
 
     :param expected: the "known" value.
 
@@ -29,6 +33,12 @@ def is_close_to(actual, expected, rel_tolerance=1e-8, abs_tolerance=0.0):
 
     :param abs_tolerance=0.0: the minimum absolute tolerance level -- useful for
                         comparisons to zero.
+
+    :param method: The method to use. options are:
+                  "asymmetric" : the expected value is used for scaling the tolerance
+                  "strong" : the difference must be below tolerance scaled by both values
+                  "weak" : the difference must be below the tolerance scaled by either of the values.
+                  "average" : the tolerance is scaled by the average of the two values.
 
     NOTES:
 
@@ -40,22 +50,39 @@ def is_close_to(actual, expected, rel_tolerance=1e-8, abs_tolerance=0.0):
     specified as Decimals
 
     """
-    print("testing:", actual, expected)
+    if method not in ("asymmetric", "strong", "weak", "average"):
+        raise ValueError('method must be one of: "asymmetric", "strong", "weak", "average"')
+
+    print("testing:", test_val, expected)
+
     if rel_tolerance < 0.0 or abs_tolerance < 0.0:
         raise ValueError('error tolerances must be non-negative')
 
-    if actual == expected:  # short-circuit exact equality
+    if test_val == expected:  # short-circuit exact equality
         return True
     # use cmath so it will work with complex ot float
-    if cmath.isinf(actual) or cmath.isinf(expected):
+    if cmath.isinf(test_val) or cmath.isinf(expected):
         # This includes the case of two infinities of opposite sign, or
         # one infinity and one finite number. Two infinities of opposite sign
         # would otherwise have an infinite relative tolerance.
         return False
 
-    diff = abs(expected-actual)
-    # print ("diff:", diff)
-    # print ("rel_tol:", abs(rel_tolerance*expected))
-    # print ("abs_tolerance:", abs_tolerance)
-    return (diff <= abs(rel_tolerance*expected)) or (diff <= abs_tolerance)
+    diff = abs(expected-test_val)
+
+    if method == "asymmetric":
+        return (diff <= abs(rel_tolerance*expected)) or (diff <= abs_tolerance)
+    elif method == "strong":
+        return ( ( (diff <= abs(rel_tolerance*expected)) and
+                   (diff <= abs(rel_tolerance*test_val)) ) or
+                (diff <= abs_tolerance) )
+    elif method == "weak":
+        return ( ( (diff <= abs(rel_tolerance*expected)) or
+                  (diff <= abs(rel_tolerance*test_val)) ) or
+                 (diff <= abs_tolerance) )
+    elif method == "average":
+        return ( (diff <= abs(rel_tolerance*(test_val+expected)/2) or
+                 (diff <= abs_tolerance)) )
+    else:
+        raise ValueError('method must be one of:'
+                         ' "asymmetric", "strong", "weak", "average"')
 
