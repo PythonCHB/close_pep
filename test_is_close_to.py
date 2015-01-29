@@ -22,6 +22,10 @@ class ErrorTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             is_close_to(1, 1, 1e-100, -1e10)
 
+    def test_bad_method(self):
+        with self.assertRaises(ValueError):
+            is_close_to(1.0001, 1.0002, method='week')
+
 class CloseTestCase(unittest.TestCase):
     """ some methods that make it easier to test a bunch of values"""
 
@@ -66,34 +70,31 @@ class ExactTestCase(CloseTestCase):
 
 class RelativeTestCase(CloseTestCase):
 
-    nums8 = [(1e9, 1e9+1),
-             (-1e-9, -1.000000001e-9),
-             (1.12345677, 1.12345678),
+    nums8 = [(1e8, 1e8+1),
+             (-1e-8, -1.00000001e-8),
+             (1.12345678, 1.12345679),
              ]
 
     def test_all_8close(self):
         self.do_close_all(self.nums8, rel_tolerance=1e-8)
 
     def test_all_8_not_close(self):
-        self.do_not_close_all(self.nums8, rel_tolerance=1e-10)
+        self.do_not_close_all(self.nums8, rel_tolerance=1e-9)
 
 
 class ZeroTestCase(CloseTestCase):
 
-    nums8 = [(1e-9, 0.0),
+    nums0 = [(1e-9, 0.0),
              (-1e-9, 0.0),
              (-1e-150, 0.0),
              ]
 
     def test_nums8_not_close(self):
         # these should not be close to any rel_tolerance
-        for a, b in self.nums8:
-            self.do_not_close(a, b, 1)
-
+        self.do_not_close_all(self.nums0, rel_tolerance=1)
     def test_nums8_close(self):
         # these should be close to abs_tolerance=1e-8
-        for a, b in self.nums8:
-            self.do_close(a, b, abs_tolerance=1e-8)
+        self.do_close_all(self.nums0, abs_tolerance=1e-8)
 
 class NonFiniteCase(CloseTestCase):
     """ test for nan, inf, -inf """
@@ -114,12 +115,10 @@ class NonFiniteCase(CloseTestCase):
                           ]
 
     def test_close(self):
-        for a,b in self.close_examples:
-            self.do_close(a, b, abs_tolerance=1e12)
+        self.do_close_all(self.close_examples, abs_tolerance=1e12) #huge!
 
     def test_not_close(self):
-        for a,b in self.not_close_examples:
-            self.do_not_close(a, b, abs_tolerance=1e12)
+        self.do_not_close_all(self.not_close_examples, abs_tolerance=1e12) #huge!
 
 
 class AsymetryTest(CloseTestCase):
@@ -127,10 +126,31 @@ class AsymetryTest(CloseTestCase):
     tests the assymetry example from the PEP
     """
     def test_close(self):
-        self.do_close(9, 10, rel_tolerance=0.1)
+        self.do_close(9, 10, rel_tolerance=0.1, method='asymmetric')
 
     def test_not_close(self):
-        self.do_not_close(10, 9, rel_tolerance=0.1)
+        self.do_not_close(10, 9, rel_tolerance=0.1, method='asymmetric')
+
+    # should pass weak test both orders
+    def test_close_weak(self):
+        self.do_close(9, 10, rel_tolerance=0.1, method='weak')
+
+    def test_close_weak_reversed(self):
+        self.do_close(10, 9, rel_tolerance=0.1, method='weak')
+
+    # should fail strong test both orders
+    def test_not_close_strong(self):
+        self.do_not_close(9, 10, rel_tolerance=0.1, method='strong')
+
+    def test_not_close_strong_reversed(self):
+        self.do_not_close(10, 9, rel_tolerance=0.1, method='strong')
+
+    # should fail average test both ways
+    def test_not_close_average(self):
+        self.do_not_close(9, 10, rel_tolerance=0.1, method='average')
+
+    def test_not_close_average_reversed(self):
+        self.do_not_close(10, 9, rel_tolerance=0.1, method='average')
 
 
 class ComplexTests(CloseTestCase):
@@ -141,12 +161,15 @@ class ComplexTests(CloseTestCase):
                       ]
 
     def test_close(self):
-        for a,b in self.close_examples:
-            self.do_close(a, b, rel_tolerance=1e-12)
+        self.do_close_all(self.close_examples, rel_tolerance=1e-12)
+
+        # for a,b in self.close_examples:
+        #     self.do_close(a, b, rel_tolerance=1e-12)
 
     def test_not_close(self):
-        for a,b in self.close_examples:
-            self.do_not_close(a, b, rel_tolerance=1e-14)
+        self.do_not_close_all(self.close_examples, rel_tolerance=1e-13)
+        # for a,b in self.close_examples:
+        #     self.do_not_close(a, b, rel_tolerance=1e-14)
 
 
 class TestInteger(CloseTestCase):
@@ -155,12 +178,10 @@ class TestInteger(CloseTestCase):
                       ]
 
     def test_close(self):
-        for a,b in self.close_examples:
-            self.do_close(a, b, rel_tolerance=1e-8)
+        self.do_close_all(self.close_examples, rel_tolerance=1e-8)
 
     def test_not_close(self):
-        for a,b in self.close_examples:
-            self.do_not_close(a, b, rel_tolerance=1e-9)
+        self.do_not_close_all(self.close_examples, rel_tolerance=1e-9)
 
 
 class TestDecimal(CloseTestCase):
@@ -170,12 +191,11 @@ class TestDecimal(CloseTestCase):
                       ]
 
     def test_close(self):
-        for a,b in self.close_examples:
-            self.do_close(a, b, rel_tolerance=Decimal('1e-8'))
+        self.do_close_all(self.close_examples, rel_tolerance=Decimal('1e-8'))
 
     def test_not_close(self):
-        for a,b in self.close_examples:
-            self.do_not_close(a, b, rel_tolerance=Decimal('1e-9'))
+        self.do_not_close_all(self.close_examples, rel_tolerance=Decimal('1e-9'))
+
 
 class TestFraction(CloseTestCase):
     # could use some more here!
@@ -183,12 +203,11 @@ class TestFraction(CloseTestCase):
                       ]
 
     def test_close(self):
-        for a,b in self.close_examples:
-            self.do_close(a, b, rel_tolerance=1e-8)
+        self.do_close_all(self.close_examples, rel_tolerance=1e-8)
 
     def test_not_close(self):
-        for a,b in self.close_examples:
-            self.do_not_close(a, b, rel_tolerance=1e-9)
+        self.do_not_close_all(self.close_examples, rel_tolerance=1e-9)
+
 
 
 

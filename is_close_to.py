@@ -53,7 +53,7 @@ def is_close_to(test_val,
     if method not in ("asymmetric", "strong", "weak", "average"):
         raise ValueError('method must be one of: "asymmetric", "strong", "weak", "average"')
 
-    print("testing:", test_val, expected)
+    # print("testing:", test_val, expected)
 
     if rel_tolerance < 0.0 or abs_tolerance < 0.0:
         raise ValueError('error tolerances must be non-negative')
@@ -68,7 +68,9 @@ def is_close_to(test_val,
         return False
 
     diff = abs(expected-test_val)
-
+    # print("diff:", diff)
+    # print("tol1", abs(rel_tolerance*expected))
+    # print("tol2", abs(rel_tolerance*test_val))
     if method == "asymmetric":
         return (diff <= abs(rel_tolerance*expected)) or (diff <= abs_tolerance)
     elif method == "strong":
