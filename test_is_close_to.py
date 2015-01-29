@@ -12,7 +12,7 @@ from is_close_to import is_close_to
 
 class ErrorTestCase(unittest.TestCase):
     """
-    Exceptions should be raised if either toleranc eis set to less than zero
+    Exceptions should be raised if either tolerance is set to less than zero
     """
     def test_negative_tol(self):
         with self.assertRaises(ValueError):
@@ -33,6 +33,19 @@ class CloseTestCase(unittest.TestCase):
         self.assertFalse(is_close_to(a, b, *args, **kwargs),
                         msg="%s and %s should not be close!" % (a, b))
 
+    def do_close_all(self, examples, *args, **kwargs):
+        for method in ("asymmetric", "strong", "weak", "average"):
+            for a, b in examples:
+                self.assertTrue(is_close_to(a, b, *args, **kwargs),
+                                 msg="%s and %s should be close with method: %s" % (a, b, method))
+
+    def do_not_close_all(self, examples, *args, **kwargs):
+        for method in ("asymmetric", "strong", "weak", "average"):
+            for a, b in examples:
+                self.assertFalse(is_close_to(a, b, *args, **kwargs),
+                                 msg="%s and %s should not be close with method: %s" % (a, b, method))
+
+
 class ExactTestCase(CloseTestCase):
     """
     Make sure exact values test as close
@@ -42,11 +55,14 @@ class ExactTestCase(CloseTestCase):
                       (1.123e-300, 1.123e-300),
                       (12345, 12345.0),
                       (0.0, -0.0),
+                      (345678, 345678)
                       ]
-    def test_exact(self):
-        for a, b in self.exact_examples:
-            self.do_close(a, b, rel_tolerance=0.0, abs_tolerance=0.0)
 
+    def test_exact(self):
+        # should return close even with zero tolerances
+        self.do_close_all(self.exact_examples,
+                          rel_tolerance=0.0,
+                          abs_tolerance=0.0)
 
 class RelativeTestCase(CloseTestCase):
 
@@ -55,15 +71,11 @@ class RelativeTestCase(CloseTestCase):
              (1.12345677, 1.12345678),
              ]
 
-    def test_nums8_close(self):
-        # these should be close to rel_tolerance=1e-8
-        for a, b in self.nums8:
-            self.do_close(a, b, 1e-8)
+    def test_all_8close(self):
+        self.do_close_all(self.nums8, rel_tolerance=1e-8)
 
-    def test_nums8_not_close(self):
-        # these should not be close to rel_tolerance=1e-10
-        for a, b in self.nums8:
-            self.do_not_close(a, b, 1e-10)
+    def test_all_8_not_close(self):
+        self.do_not_close_all(self.nums8, rel_tolerance=1e-10)
 
 
 class ZeroTestCase(CloseTestCase):
