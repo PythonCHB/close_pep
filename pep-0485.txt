@@ -214,27 +214,59 @@ used in the example code.
 
 Each of these formulations can lead to slightly different results.
 However, if the tolerance value is small, the differences are quite
-small. in fact, often less that floating point precision anyway.
+small. In fact, often less than available floating point precision.
+
+How much difference does it make?
+---------------------------------
 
 The largest difference is between options (2) and (3) where the
 allowable absolute difference is scaled by either the larger or
-smaller of the values. This means that the difference between the two
-tests (delta) is ``tol*abs(a-b)``. If we assume for the moment that
-both a and b are positive, and a is the larger value, then that is
-simply ``delta = tol*(a-b)``. We are concerned about the
-threshold for closeness, thus ``(a-b) = tol*a``. So
-``delta/tol = a-b = tol*a``, which leads to delta = ``tol**2 * a``.
+smaller of the values.
+
+Define ``delta`` to be the difference between the allowable absolute
+tolerance defined by the larger value and that defined by the smaller
+value. That is, the amount that the two input values need to be
+different in order to get a different result from the two tests.
+``tol`` is the relative tolerance value.
+
+Assume that ``a`` is the larger value and that both ``a`` and ``b``
+are positive, to make the analysis a bit easier. ``delta`` is
+therefore::
+
+  delta = tol * (a-b)
+
+
+or::
+
+  delta / tol = (a-b)
+
+
+The largest absolute difference that would pass the test: ``(a-b)``,
+equals the tolerance times the larger value::
+
+  (a-b) = tol * a
+
+
+Substituting into the expression for delta::
+
+  delta / tol = tol * a
+
+
+so::
+
+  delta = tol**2 * a
+
 
 For example, for ``a = 10``, ``b = 9``, ``tol = 0.1`` (10%):
 
-maximum tolerance ``tol*a == 0.1 * 10 == 1.0``
+maximum tolerance ``tol * a == 0.1 * 10 == 1.0``
 
-minimum tolerance ``tol*b == 0.1 * 9.0 == 0.9``
+minimum tolerance ``tol * b == 0.1 * 9.0 == 0.9``
 
-delta = ``1.0 - 0.1 == 0.1 ==  tol**2 * b == 0.1**2 * 10 == .01
+delta = ``(1.0 - 0.9) * 0.1 = 0.1`` or  ``tol**2 * a = 0.1**2 * 10 = .01``
 
 The absolute difference between the maximum and minimum tolerance
-tests in this case seems to be substantial. However, the primary use
+tests in this case could be substantial. However, the primary use
 case for the proposed function is testing the results of computations.
 In that case a relative tolerance is likely to be selected of much
 smaller magnitude.
@@ -251,6 +283,7 @@ In addition, in common use, tolerances are defined to 1 significant
 figure -- that is, 1e-8 is specifying about 8 decimal digits of
 accuracy. So the difference between the various possible tests is well
 below the precision to which the tolerance is specified.
+
 
 Symmetry
 --------
@@ -465,7 +498,7 @@ References
 
   https://mail.python.org/pipermail/python-ideas/2015-January/031313.html
 
-.. [2] Wikipedaia page on relative difference
+.. [2] Wikipedia page on relative difference
    (http://en.wikipedia.org/wiki/Relative_change_and_difference)
 
 .. [3] Boost project floating-point comparison algorithms
