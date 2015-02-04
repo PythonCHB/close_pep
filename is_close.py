@@ -20,30 +20,33 @@ License: Apache License 2.0 http://opensource.org/licenses/apache2.0.php
 import cmath
 
 
-def is_close(test_val,
-             expected,
+def is_close(a,
+             b,
              rel_tol=1e-8,
              abs_tol=0.0,
              method='strong'):
     """
-    returns True if test_val is close in value to expected. False otherwise
+    returns True if a is close in value to b. False otherwise
 
-    :param test_val: the value that has been computed, measured, etc.
+    :param a: one of the values to be tested
 
-    :param expected: the "known" value.
+    :param b: the other value to be tested
 
-    :param rel_tol=1e-8: the relative tolerance -- the amount of error
-                     allowed, relative to the magnitude of the expected
-                     value.
+    :param rel_tol=1e-8: The relative tolerance -- the amount of error
+                         allowed, relative to the magnitude of the input
+                         values.
 
-    :param abs_tol=0.0: the minimum absolute tolerance level -- useful for
+    :param abs_tol=0.0: The minimum absolute tolerance level -- useful for
                         comparisons to zero.
 
     :param method: The method to use. options are:
-                  "asymmetric" : the expected value is used for scaling the tolerance
-                  "strong" : the difference must be below tolerance scaled by both values
-                  "weak" : the difference must be below the tolerance scaled by either of the values.
-                  "average" : the tolerance is scaled by the average of the two values.
+                  "asymmetric" : the b value is used for scaling the tolerance
+                  "strong" : The tolerance is scaled by the smaller of
+                             the two values
+                  "weak" : The tolerance is scaled by the larger of
+                           the two values
+                  "average" : The tolerance is scaled by the average of
+                              the two values.
 
     NOTES:
 
@@ -56,40 +59,38 @@ def is_close(test_val,
 
       is_close(a, b, rel_tol=Decimal('1e-9'))
 
+    See PEP-0485 for a detailed description
+
     """
     if method not in ("asymmetric", "strong", "weak", "average"):
-        raise ValueError('method must be one of: "asymmetric", "strong", "weak", "average"')
-
-    # print("testing:", test_val, expected)
+        raise ValueError('method must be one of: "asymmetric",'
+                         ' "strong", "weak", "average"')
 
     if rel_tol < 0.0 or abs_tol < 0.0:
         raise ValueError('error tolerances must be non-negative')
 
-    if test_val == expected:  # short-circuit exact equality
+    if a == b:  # short-circuit exact equality
         return True
     # use cmath so it will work with complex ot float
-    if cmath.isinf(test_val) or cmath.isinf(expected):
+    if cmath.isinf(a) or cmath.isinf(b):
         # This includes the case of two infinities of opposite sign, or
         # one infinity and one finite number. Two infinities of opposite sign
         # would otherwise have an infinite relative tolerance.
         return False
 
-    diff = abs(expected - test_val)
-    # print("diff:", diff)
-    # print("tol1", abs(rel_tol*expected))
-    # print("tol2", abs(rel_tol*test_val))
+    diff = abs(b - a)
     if method == "asymmetric":
-        return (diff <= abs(rel_tol * expected)) or (diff <= abs_tol)
+        return (diff <= abs(rel_tol * b)) or (diff <= abs_tol)
     elif method == "strong":
-        return (((diff <= abs(rel_tol * expected)) and
-                 (diff <= abs(rel_tol * test_val))) or
+        return (((diff <= abs(rel_tol * b)) and
+                 (diff <= abs(rel_tol * a))) or
                 (diff <= abs_tol))
     elif method == "weak":
-        return (((diff <= abs(rel_tol * expected)) or
-                 (diff <= abs(rel_tol * test_val))) or
+        return (((diff <= abs(rel_tol * b)) or
+                 (diff <= abs(rel_tol * a))) or
                 (diff <= abs_tol))
     elif method == "average":
-        return ((diff <= abs(rel_tol * (test_val + expected) / 2) or
+        return ((diff <= abs(rel_tol * (a + b) / 2) or
                 (diff <= abs_tol)))
     else:
         raise ValueError('method must be one of:'

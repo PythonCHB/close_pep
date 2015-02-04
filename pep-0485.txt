@@ -78,7 +78,7 @@ python-ideas list [1]_.
 
 The new function will have the following signature::
 
-  is_close(a, b, rel_tolerance=1e-8, abs_tolerance=0.0)
+  is_close(a, b, rel_tolerance=1e-9, abs_tolerance=0.0)
 
 ``a`` and ``b``: are the two values to be tested to relative closeness
 
@@ -139,19 +139,31 @@ a user will need to know if a computed value is "close" to zero. This
 calls for an absolute tolerance test. If the user needs to call this
 function inside a loop or comprehension, where some, but not all, of
 the expected values may be zero, it is important that both a relative
-tolerance and absolute tolerance can be tested for at once.
+tolerance and absolute tolerance can be tested for with a single
+function with a single set of parameters.
 
 There is a similar issue if the two values to be compared straddle zero:
-if a ~= -b, then a and b will never be computed as "close".
+if a is approximately equal to -b, then a and b will never be computed
+as "close".
 
 To handle this case, an optional parameter, ``abs_tolerance`` can be
-used to set a minimum tolerance to be used in the case of very
-small or zero computed absolute tolerance. That is, the values will be
-always be considered close if the difference between them is less than the abs_tolerance
+used to set a minimum tolerance used in the case of very small or zero
+computed absolute tolerance. That is, the values will be always be
+considered close if the difference between them is less than the
+abs_tolerance
 
-The default absolute tolerance value is set to zero because there is no value that is appropriate for the general case. It is impossible to know an appropriate value without knowing the likely values expected for a given use case. If all the values tested are on order of one, then a value of about 1e-8 might be appropriate, but that would be far too large if expected values are on order of 1e-12 or smaller.
+The default absolute tolerance value is set to zero because there is
+no value that is appropriate for the general case. It is impossible to
+know an appropriate value without knowing the likely values expected
+for a given use case. If all the values tested are on order of one,
+then a value of about 1e-8 might be appropriate, but that would be far
+too large if expected values are on order of 1e-12 or smaller.
 
-Any non-zero default might result in user's tests passing totally inappropriately. If, on the other hand a test against zero fails the first time with defaults, a user will be prompted to select an appropriate value for the problem at hand in order to get the test to pass.
+Any non-zero default might result in user's tests passing totally
+inappropriately. If, on the other hand a test against zero fails the
+first time with defaults, a user will be prompted to select an
+appropriate value for the problem at hand in order to get the test to
+pass.
 
 NOTE: that the author of this PEP has resolved to go back over many of
 his tests that use the numpy ``all_close()`` function, which provides
@@ -160,12 +172,24 @@ appropriate.
 
 If the user sets the rel_tolerance parameter to 0.0, then only the
 absolute tolerance will effect the result. While not the goal of the
-function, it does allow it to used as an absolute tolerance check as well.
+function, it does allow it to be used as a purely absolute tolerance
+check as well.
+
+unittest assertion
+-------------------
+
+[need text here]
+
+implementation
+--------------
 
 A sample implementation is available (as of Jan 22, 2015) on gitHub:
 
 https://github.com/PythonCHB/close_pep/blob/master
 
+This implementation has a flag that lets the user select which
+relative tolerance test to apply -- this PEP does not suggest that
+that be retained, but rather than the strong test be selected.
 
 Relative Difference
 ===================
@@ -173,9 +197,9 @@ Relative Difference
 There are essentially two ways to think about how close two numbers
 are to each-other:
 
-absolute difference: simply ``abs(a-b)``
+Absolute difference: simply ``abs(a-b)``
 
-relative difference: ``abs(a-b)/scale_factor`` [2]_.
+Relative difference: ``abs(a-b)/scale_factor`` [2]_.
 
 The absolute difference is trivial enough that this proposal focuses
 on the relative difference.
@@ -189,7 +213,7 @@ consideration, for instance:
 
 3) The minimum absolute value of the two.
 
-4) The arithmetic mean of the two
+4) The absolute value of the arithmetic mean of the two
 
 These lead to the following possibilities for determining if two
 values, a and b, are close to each other.
@@ -276,13 +300,14 @@ case for the proposed function is testing the results of computations.
 In that case a relative tolerance is likely to be selected of much
 smaller magnitude.
 
-For example, the proposed default relative tolerance is ``1e-8``,
-about half the precision available in a python float. In that case,
-the difference between the two tests is ``1e8**2 * a`` or
-``1e16 * a``, which is close to the limit of precision of a python
-float. If the relative tolerance is set to an even smaller number, the
+For example, a relative tolerance of ``1e-8`` is about half the
+precision available in a python float. In that case, the difference
+between the two tests is ``1e-8**2 * a`` or ``1e-16 * a``, which is
+close to the limit of precision of a python float. If the relative
+tolerance is set to the proposed default of 1e-9 (or smaller), the
 difference between the two tests will be lost to the limits of
-precision of floating point.
+precision of floating point. That is, each of the four methods will
+yield exactly the same results for all values of a and b.
 
 In addition, in common use, tolerances are defined to 1 significant
 figure -- that is, 1e-8 is specifying about 8 decimal digits of
@@ -308,15 +333,15 @@ other?", there is no obvious ordering, and a symmetric test is most
 appropriate.
 
 However, if the question is: "Is the computed value within x% of this
-known value?", the it is appropriate to scale the tolerance to the
+known value?", then it is appropriate to scale the tolerance to the
 known value, and an asymmetric test is most appropriate.
 
 From the previous section, it is clear that either approach would
-yield similar results in the common use cases. In that case, the goal
-of this proposal is to provide a function that is least likely to
-produce surprising results.
+yield the same or similar results in the common use cases. In that
+case, the goal of this proposal is to provide a function that is least
+likely to produce surprising results.
 
-The symmetric approaches provide an appealing consistency -- it
+The symmetric approach provide an appealing consistency -- it
 mirrors the symmetry of equality, and is less likely to confuse
 people. A symmetric test also relieves the user of the need to think
 about the order in which to set the arguments.  It was also pointed
@@ -331,10 +356,78 @@ enough to simply write the test directly::
   if a-b <= tol*a:
 
 (assuming a > b in this case). There is little need to provide a
-(function for this particular case.
+function for this particular case.
 
-This proposal uses the boost "strong" (3) test case: it is symmetric
-and provides a slightly stricter criteria for tolerance.
+This proposal uses a symmetric test.
+
+Which symmetric test?
+---------------------
+
+There are three symmetric tests considered:
+
+The case that uses the arithmetic mean of the two values requires that
+the value be either added together before dividing by 2, which could
+result in extra overflow to inf for very large numbers, or require
+each value to be divided by two before being added together, which
+could result in underflow to -inf for very small numbers. This effect
+would only occur at the very limit of float values, but it was decided
+there as no benefit to the method worth reducing the range of
+functionality.
+
+This leaves the boost "weak" test (2)-- or using the smaller value to
+scale the tolerance, or the Boost "strong" (3) test, which uses the
+smaller of the values to scale the tolerance. For small tolerance,
+they yield the same result, but this proposal uses the boost "strong"
+test case: it is symmetric and provides a slightly stricter criteria
+for tolerance.
+
+
+Defaults
+========
+
+Default values are required for the relative and absolute tolerance.
+
+Relative Tolerance Default
+--------------------------
+
+The relative tolerance required for two values to be considered
+"close" is entirely use-case dependent. Nevertheless, the relative
+tolerance needs to be less than 1.0, and greater than 1e-16
+(approximate precision of a python float). The value of 1e-9 was
+selected because it is the largest relative tolerance for which the
+various possible methods will yield the same result, and it is also
+about half of the precision available to a python float. In the
+general case, a good numerical algorithm is not expected to lose more
+than about half of available digits of accuracy, and if a much larger
+tolerance is acceptable, the user should be considering the proper
+value in that case. Thus 1-e9 is expected to "just work" for many
+cases.
+
+Absolute tolerance default
+--------------------------
+
+The absolute tolerance value will be used primarily for comparing to
+zero. The absolute tolerance required to determine if a value is
+"close" to zero is entirely use-case dependent. There is also
+essentially no bounds to the useful range -- expected values would
+conceivably be anywhere within the limits of a python float.  Thus a
+default of 0.0 is selected.
+
+If, for a given use case, a user needs to compare to zero, the test
+will be guaranteed to fail the first time, and the user can select an
+appropriate value.
+
+It was suggested that comparing to zero is, in fact, a common use case
+(evidence suggest that the numpy functions are often used with zero).
+In this case, it would be desirable to have a "useful" default. Values
+around 1-e8 were suggested, being about half of floating point
+precision for values of around value 1.
+
+However, to quote The Zen: "In the face of ambiguity, refuse the
+temptation to guess." Guessing that users will most often be concerned
+with values close to 1.0 would lead to spurious passing tests when used
+with smaller values -- this is potentially more damaging than
+requiring the user to thoughtfully select an appropriate value.
 
 
 Expected Uses
@@ -497,17 +590,24 @@ References
 ==========
 
 .. [1] Python-ideas list discussion threads
-   (https://mail.python.org/pipermail/python-ideas/2015-January/030947.html)
+
+   https://mail.python.org/pipermail/python-ideas/2015-January/030947.html
 
    https://mail.python.org/pipermail/python-ideas/2015-January/031124.html
 
    https://mail.python.org/pipermail/python-ideas/2015-January/031313.html
 
 .. [2] Wikipedia page on relative difference
-   (http://en.wikipedia.org/wiki/Relative_change_and_difference)
+
+   http://en.wikipedia.org/wiki/Relative_change_and_difference
 
 .. [3] Boost project floating-point comparison algorithms
-   (http://www.boost.org/doc/libs/1_35_0/libs/test/doc/components/test_tools/floating_point_comparison.html)
+
+   http://www.boost.org/doc/libs/1_35_0/libs/test/doc/components/test_tools/floating_point_comparison.html
+
+.. Bruce Dawson's discussion of floating point.
+
+   https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 
 
 Copyright

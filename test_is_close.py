@@ -41,14 +41,18 @@ class CloseTestCase(unittest.TestCase):
     def do_close_all(self, examples, *args, **kwargs):
         for method in ("asymmetric", "strong", "weak", "average"):
             for a, b in examples:
+                kwargs['method'] = method
                 self.assertTrue(is_close(a, b, *args, **kwargs),
-                                msg="%s and %s should be close with method: %s" % (a, b, method))
+                                msg=("%s and %s should be close with method:"
+                                     " %s" % (a, b, method)))
 
     def do_not_close_all(self, examples, *args, **kwargs):
         for method in ("asymmetric", "strong", "weak", "average"):
             for a, b in examples:
+                kwargs['method'] = method
                 self.assertFalse(is_close(a, b, *args, **kwargs),
-                                 msg="%s and %s should not be close with method: %s" % (a, b, method))
+                                 msg=("%s and %s should not be close with"
+                                      " method: %s" % (a, b, method)))
 
 
 class ExactTestCase(CloseTestCase):
