@@ -77,7 +77,7 @@ class ExactTestCase(CloseTestCase):
 class RelativeTestCase(CloseTestCase):
 
     nums8 = [(1e8, 1e8 + 1),
-             (-1e-8, -1.00000001e-8),
+             (-1e-8, -1.000000009e-8),
              (1.12345678, 1.12345679),
              ]
 
@@ -97,7 +97,7 @@ class ZeroTestCase(CloseTestCase):
 
     def test_nums8_not_close(self):
         # these should not be close to any rel_tol
-        self.do_not_close_all(self.nums0, rel_tol=1)
+        self.do_not_close_all(self.nums0, rel_tol=0.9)
 
     def test_nums8_close(self):
         # these should be close to abs_tol=1e-8
@@ -123,10 +123,10 @@ class NonFiniteCase(CloseTestCase):
                           ]
 
     def test_close(self):
-        self.do_close_all(self.close_examples, abs_tol=1e12)  # huge!
+        self.do_close_all(self.close_examples, abs_tol=0.999999999999999)  # largest tolerance possible
 
     def test_not_close(self):
-        self.do_not_close_all(self.not_close_examples, abs_tol=1e12)  # huge!
+        self.do_not_close_all(self.not_close_examples, abs_tol=0.999999999999999)  # largest tolerance possible
 
 
 class AsymetryTest(CloseTestCase):
