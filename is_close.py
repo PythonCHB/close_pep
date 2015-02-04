@@ -17,13 +17,14 @@ Copyright: Christopher H. Barker
 License: Apache License 2.0 http://opensource.org/licenses/apache2.0.php
 
 """
-import math, cmath
+import cmath
+
 
 def is_close(test_val,
              expected,
              rel_tol=1e-8,
              abs_tol=0.0,
-             method = 'asymmetric'):
+             method='strong'):
     """
     returns True if test_val is close in value to expected. False otherwise
 
@@ -50,8 +51,10 @@ def is_close(test_val,
 
     Complex values are compared based on their absolute value.
 
-    The function can be used with Decimal types, of the tolerance(s) are
-    specified as Decimals
+    The function can be used with Decimal types, if the tolerance(s) are
+    specified as Decimals::
+
+      is_close(a, b, rel_tol=Decimal('1e-9'))
 
     """
     if method not in ("asymmetric", "strong", "weak", "average"):
@@ -71,24 +74,23 @@ def is_close(test_val,
         # would otherwise have an infinite relative tolerance.
         return False
 
-    diff = abs(expected-test_val)
+    diff = abs(expected - test_val)
     # print("diff:", diff)
     # print("tol1", abs(rel_tol*expected))
     # print("tol2", abs(rel_tol*test_val))
     if method == "asymmetric":
-        return (diff <= abs(rel_tol*expected)) or (diff <= abs_tol)
+        return (diff <= abs(rel_tol * expected)) or (diff <= abs_tol)
     elif method == "strong":
-        return ( ( (diff <= abs(rel_tol*expected)) and
-                   (diff <= abs(rel_tol*test_val)) ) or
-                (diff <= abs_tol) )
+        return (((diff <= abs(rel_tol * expected)) and
+                 (diff <= abs(rel_tol * test_val))) or
+                (diff <= abs_tol))
     elif method == "weak":
-        return ( ( (diff <= abs(rel_tol*expected)) or
-                  (diff <= abs(rel_tol*test_val)) ) or
-                 (diff <= abs_tol) )
+        return (((diff <= abs(rel_tol * expected)) or
+                 (diff <= abs(rel_tol * test_val))) or
+                (diff <= abs_tol))
     elif method == "average":
-        return ( (diff <= abs(rel_tol*(test_val+expected)/2) or
-                 (diff <= abs_tol)) )
+        return ((diff <= abs(rel_tol * (test_val + expected) / 2) or
+                (diff <= abs_tol)))
     else:
         raise ValueError('method must be one of:'
                          ' "asymmetric", "strong", "weak", "average"')
-

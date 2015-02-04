@@ -219,6 +219,11 @@ small. In fact, often less than available floating point precision.
 How much difference does it make?
 ---------------------------------
 
+When selecting a method to determine closeness, one might want to know
+how much  of a difference it could make to use one test or the other
+-- i.e. how many values are there (or what range of values) that will
+pass one test, but not the other.
+
 The largest difference is between options (2) and (3) where the
 allowable absolute difference is scaled by either the larger or
 smaller of the values.
@@ -496,7 +501,7 @@ References
 
    https://mail.python.org/pipermail/python-ideas/2015-January/031124.html
 
-  https://mail.python.org/pipermail/python-ideas/2015-January/031313.html
+   https://mail.python.org/pipermail/python-ideas/2015-January/031313.html
 
 .. [2] Wikipedia page on relative difference
    (http://en.wikipedia.org/wiki/Relative_change_and_difference)
