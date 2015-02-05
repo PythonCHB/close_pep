@@ -167,7 +167,7 @@ appropriate value for the problem at hand in order to get the test to
 pass.
 
 NOTE: that the author of this PEP has resolved to go back over many of
-his tests that use the numpy ``all_close()`` function, which provides
+his tests that use the numpy ``allclose()`` function, which provides
 a default abs_tolerance, and make sure that the default value is
 appropriate.
 
@@ -483,13 +483,13 @@ places (default 7), and comparing to zero.
 This method is purely an absolute tolerance test, and does not address
 the need for a relative tolerance test.
 
-numpy ``is_close()``
---------------------
+numpy ``isclose()``
+-------------------
 
 http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.isclose.html
 
-The numpy package provides the vectorized functions is_close() and
-all_close, for similar use cases as this proposal:
+The numpy package provides the vectorized functions isclose() and
+allclose(), for similar use cases as this proposal:
 
 ``isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False)``
 
