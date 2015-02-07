@@ -76,7 +76,7 @@ Proposed Implementation
 NOTE: this PEP is the result of an extended discussion on the
 python-ideas list [1]_.
 
-The new function will have the following signature::
+The new function will go into the math module, and have the following signature::
 
   is_close(a, b, rel_tolerance=1e-9, abs_tolerance=0.0)
 
@@ -84,16 +84,16 @@ The new function will have the following signature::
 
 ``rel_tolerance``: is the relative tolerance -- it is the amount of
 error allowed, relative to the magnitude a and b. For example, to set
-a tolerance of 5%, pass tol=0.05. The default tolerance is 1e-8, which
+a tolerance of 5%, pass tol=0.05. The default tolerance is 1e-9, which
 assures that the two values are the same within about 8 decimal
-digits.
+digits. rel_tolerance must be between 0.0 and 1.0 (0.0 < rel_tol < 1.0)
 
 ``abs_tolerance``: is an minimum absolute tolerance level -- useful for
 comparisons near zero.
 
 Modulo error checking, etc, the function will return the result of::
 
-  abs(a-b) <= max( rel_tolerance * min(abs(a), abs(b), abs_tolerance )
+  abs(a-b) <= max( rel_tolerance * min(abs(a), abs(b), abs_tolerance) )
 
 
 Handling of non-finite numbers
@@ -114,14 +114,15 @@ theory, it should work for any type that supports ``abs()``,
 comparisons, and subtraction.  The code will be written and tested to
 accommodate these types:
 
-* ``Decimal``: for Decimal, the tolerance must be set to a Decimal type.
+* ``Decimal``: 
 
 * ``int``
 
 * ``Fraction``
 
-* ``complex``: for complex, ``abs(z)`` will be used for scaling and
-  comparison.
+* ``complex``: for complex, the absolute value of the complex values
+  will be used for scaling and   comparison. If a complex tolerance is
+  passed in, the absolute value will be used as the tolerance.
 
 
 Behavior near zero
@@ -156,8 +157,8 @@ The default absolute tolerance value is set to zero because there is
 no value that is appropriate for the general case. It is impossible to
 know an appropriate value without knowing the likely values expected
 for a given use case. If all the values tested are on order of one,
-then a value of about 1e-8 might be appropriate, but that would be far
-too large if expected values are on order of 1e-12 or smaller.
+then a value of about 1e-9 might be appropriate, but that would be far
+too large if expected values are on order of 1e-9 or smaller.
 
 Any non-zero default might result in user's tests passing totally
 inappropriately. If, on the other hand a test against zero fails the
@@ -166,7 +167,7 @@ appropriate value for the problem at hand in order to get the test to
 pass.
 
 NOTE: that the author of this PEP has resolved to go back over many of
-his tests that use the numpy ``all_close()`` function, which provides
+his tests that use the numpy ``allclose()`` function, which provides
 a default abs_tolerance, and make sure that the default value is
 appropriate.
 
@@ -228,9 +229,9 @@ values, a and b, are close to each other.
 
 NOTE: (2) and (3) can also be written as:
 
-2) ``(abs(a-b) <= tol*abs(a)) or (abs(a-b) <= tol*abs(a))``
+2) ``(abs(a-b) <= abs(tol*a)) or (abs(a-b) <= abs(tol*b))``
 
-3) ``(abs(a-b) <= tol*abs(a)) and (abs(a-b) <= tol*abs(a))``
+3) ``(abs(a-b) <= abs(tol*a)) and (abs(a-b) <= abs(tol*b))``
 
 (Boost refers to these as the "weak" and "strong" formulations [3]_)
 These can be a tiny bit more computationally efficient, and thus are
@@ -310,7 +311,7 @@ precision of floating point. That is, each of the four methods will
 yield exactly the same results for all values of a and b.
 
 In addition, in common use, tolerances are defined to 1 significant
-figure -- that is, 1e-8 is specifying about 8 decimal digits of
+figure -- that is, 1e-9 is specifying about 9 decimal digits of
 accuracy. So the difference between the various possible tests is well
 below the precision to which the tolerance is specified.
 
@@ -371,8 +372,9 @@ result in extra overflow to inf for very large numbers, or require
 each value to be divided by two before being added together, which
 could result in underflow to -inf for very small numbers. This effect
 would only occur at the very limit of float values, but it was decided
-there as no benefit to the method worth reducing the range of
-functionality.
+there was no benefit to the method worth reducing the range of
+functionality or adding the complexity of checking values to determine
+the order of computation.
 
 This leaves the boost "weak" test (2)-- or using the smaller value to
 scale the tolerance, or the Boost "strong" (3) test, which uses the
@@ -481,13 +483,13 @@ places (default 7), and comparing to zero.
 This method is purely an absolute tolerance test, and does not address
 the need for a relative tolerance test.
 
-numpy ``is_close()``
---------------------
+numpy ``isclose()``
+-------------------
 
 http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.isclose.html
 
-The numpy package provides the vectorized functions is_close() and
-all_close, for similar use cases as this proposal:
+The numpy package provides the vectorized functions isclose() and
+allclose(), for similar use cases as this proposal:
 
 ``isclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False)``
 
