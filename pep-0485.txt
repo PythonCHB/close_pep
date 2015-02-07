@@ -16,9 +16,7 @@ Abstract
 
 This PEP proposes the addition of a function to the standard library
 that determines whether one value is approximately equal or "close" to
-another value. It is also proposed that an assertion be added to the
-``unittest.TestCase`` class to provide easy access for those using
-unittest for testing.
+another value.
 
 
 Rationale
@@ -50,7 +48,7 @@ method, but it:
 * Is an absolute difference test. Often the measure of difference
   requires, particularly for floating point numbers, a relative error,
   i.e "Are these two values within x% of each-other?", rather than an
-  absolute error. Particularly when the magnatude of the values is
+  absolute error. Particularly when the magnitude of the values is
   unknown a priori.
 
 The numpy package has the ``allclose()`` and ``isclose()`` functions,
@@ -73,28 +71,30 @@ library.
 Proposed Implementation
 =======================
 
-NOTE: this PEP is the result of an extended discussion on the
+NOTE: this PEP is the result of extended discussions on the
 python-ideas list [1]_.
 
-The new function will go into the math module, and have the following signature::
+The new function will go into the math module, and have the following
+signature::
 
-  is_close(a, b, rel_tolerance=1e-9, abs_tolerance=0.0)
+  isclose(a, b, rel_tol=1e-9, abs_tol=0.0)
 
 ``a`` and ``b``: are the two values to be tested to relative closeness
 
-``rel_tolerance``: is the relative tolerance -- it is the amount of
+``rel_tol``: is the relative tolerance -- it is the amount of
 error allowed, relative to the magnitude a and b. For example, to set
 a tolerance of 5%, pass tol=0.05. The default tolerance is 1e-9, which
 assures that the two values are the same within about 8 decimal
-digits. rel_tolerance must be between 0.0 and 1.0 (0.0 < rel_tol < 1.0)
+digits. ``rel_tol`` must be between 0.0 and 1.0 (0.0 < rel_tol < 1.0)
 
-``abs_tolerance``: is an minimum absolute tolerance level -- useful for
+``abs_tol``: is an minimum absolute tolerance level -- useful for
 comparisons near zero.
 
 Modulo error checking, etc, the function will return the result of::
 
-  abs(a-b) <= max( rel_tolerance * min(abs(a), abs(b), abs_tolerance) )
+  abs(a-b) <= max( rel_tol * min(abs(a), abs(b), abs_tol) )
 
+The name, ``isclose``, is selected for consistency with the existing ``isnan`` and ``isinf``.
 
 Handling of non-finite numbers
 ------------------------------
@@ -114,14 +114,14 @@ theory, it should work for any type that supports ``abs()``,
 comparisons, and subtraction.  The code will be written and tested to
 accommodate these types:
 
-* ``Decimal``: 
+* ``Decimal``:
 
 * ``int``
 
 * ``Fraction``
 
 * ``complex``: for complex, the absolute value of the complex values
-  will be used for scaling and   comparison. If a complex tolerance is
+  will be used for scaling and comparison. If a complex tolerance is
   passed in, the absolute value will be used as the tolerance.
 
 
@@ -131,8 +131,8 @@ Behavior near zero
 Relative comparison is problematic if either value is zero. By
 definition, no value is small relative to zero. And computationally,
 if either value is zero, the difference is the absolute value of the
-other value, and the computed absolute tolerance will be rel_tolerance
-times that value. rel-tolerance is always less than one, so the
+other value, and the computed absolute tolerance will be ``rel_tol``
+times that value. ``rel_tol`` is always less than one, so the
 difference will never be less than the tolerance.
 
 However, while mathematically correct, there are many use cases where
@@ -147,11 +147,11 @@ There is a similar issue if the two values to be compared straddle zero:
 if a is approximately equal to -b, then a and b will never be computed
 as "close".
 
-To handle this case, an optional parameter, ``abs_tolerance`` can be
+To handle this case, an optional parameter, ``abs_tol`` can be
 used to set a minimum tolerance used in the case of very small or zero
-computed absolute tolerance. That is, the values will be always be
-considered close if the difference between them is less than the
-abs_tolerance
+computed relative tolerance. That is, the values will be always be
+considered close if the difference between them is less than
+``abs_tol``
 
 The default absolute tolerance value is set to zero because there is
 no value that is appropriate for the general case. It is impossible to
@@ -168,29 +168,30 @@ pass.
 
 NOTE: that the author of this PEP has resolved to go back over many of
 his tests that use the numpy ``allclose()`` function, which provides
-a default abs_tolerance, and make sure that the default value is
+a default absolute tolerance, and make sure that the default value is
 appropriate.
 
-If the user sets the rel_tolerance parameter to 0.0, then only the
+If the user sets the rel_tol parameter to 0.0, then only the
 absolute tolerance will effect the result. While not the goal of the
 function, it does allow it to be used as a purely absolute tolerance
 check as well.
 
-unittest assertion
--------------------
 
-[need text here]
-
-implementation
+Implementation
 --------------
 
 A sample implementation is available (as of Jan 22, 2015) on gitHub:
 
-https://github.com/PythonCHB/close_pep/blob/master
+https://github.com/PythonCHB/close_pep/blob/master/is_close.py
 
 This implementation has a flag that lets the user select which
 relative tolerance test to apply -- this PEP does not suggest that
 that be retained, but rather than the strong test be selected.
+
+There are also drafts of this PEP and test code, etc. there:
+
+https://github.com/PythonCHB/close_pep
+
 
 Relative Difference
 ===================
@@ -322,11 +323,11 @@ Symmetry
 A relative comparison can be either symmetric or non-symmetric. For a
 symmetric algorithm:
 
-``is_close_to(a,b)`` is always the same as ``is_close_to(b,a)``
+``isclose(a,b)`` is always the same as ``isclose(b,a)``
 
 If a relative closeness test uses only one of the values (such as (1)
-above), then the result is asymmetric, i.e. is_close_to(a,b) is not
-necessarily the same as is_close_to(b,a).
+above), then the result is asymmetric, i.e. isclose(a,b) is not
+necessarily the same as isclose(b,a).
 
 Which approach is most appropriate depends on what question is being
 asked. If the question is: "are these two numbers close to each
@@ -451,7 +452,7 @@ criteria for a simple iterative solution to an implicit function::
     guess = something
     while True:
         new_guess = implicit_function(guess, *args)
-        if is_close(new_guess, guess):
+        if isclose(new_guess, guess):
             break
         guess = new_guess
 
@@ -578,7 +579,7 @@ comparison involved zero.
 However, this would not allow the same call to be used for a sequence
 of values, such as in a loop or comprehension, or in the
 ``TestCase.assertClose()`` method. Making the function far less
-useful. It is noted that the default abs_tolerance=0.0 achieves the
+useful. It is noted that the default abs_tol=0.0 achieves the
 same effect if the default is not overidden.
 
 Other tests

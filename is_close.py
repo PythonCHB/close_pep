@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-An implementation for an is_close() function, for possible inclusion in
+An implementation for an isclose() function, for possible inclusion in
 the Python standard library -- PEP0485
 
 This implementation is the result of much discussion on the python-ideas list
@@ -20,11 +20,11 @@ License: Apache License 2.0 http://opensource.org/licenses/apache2.0.php
 import cmath
 
 
-def is_close(a,
-             b,
-             rel_tol=1e-9,
-             abs_tol=0.0,
-             method='strong'):
+def isclose(a,
+            b,
+            rel_tol=1e-9,
+            abs_tol=0.0,
+            method='strong'):
     """
     returns True if a is close in value to b. False otherwise
 
@@ -59,7 +59,7 @@ def is_close(a,
     The function can be used with Decimal types, if the tolerance(s) are
     specified as Decimals::
 
-      is_close(a, b, rel_tol=Decimal('1e-9'))
+      isclose(a, b, rel_tol=Decimal('1e-9'))
 
     See PEP-0485 for a detailed description
 
