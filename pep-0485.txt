@@ -370,7 +370,7 @@ The case that uses the arithmetic mean of the two values requires that
 the value be either added together before dividing by 2, which could
 result in extra overflow to inf for very large numbers, or require
 each value to be divided by two before being added together, which
-could result in underflow to -inf for very small numbers. This effect
+could result in underflow to zero for very small numbers. This effect
 would only occur at the very limit of float values, but it was decided
 there was no benefit to the method worth reducing the range of
 functionality or adding the complexity of checking values to determine
