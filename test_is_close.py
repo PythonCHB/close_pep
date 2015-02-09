@@ -198,17 +198,17 @@ class TestDecimal(CloseTestCase):
                       (Decimal('1.00000001e-100'), Decimal('1.0e-100')),
                       ]
 
-    # def test_close(self):
-    #     self.do_close_all(self.close_examples, rel_tol=Decimal('1e-8'))
-
-    # def test_not_close(self):
-    #     self.do_not_close_all(self.close_examples, rel_tol=Decimal('1e-9'))
-
     def test_close(self):
-        self.do_close_all(self.close_examples, rel_tol='1e-8')
+        self.do_close_all(self.close_examples, rel_tol=Decimal('1e-8'))
 
     def test_not_close(self):
-        self.do_not_close_all(self.close_examples, rel_tol='1e-9')
+        self.do_not_close_all(self.close_examples, rel_tol=Decimal('1e-9'))
+
+    # def test_close(self):
+    #     self.do_close_all(self.close_examples, rel_tol=1e-8)
+
+    # def test_not_close(self):
+    #     self.do_not_close_all(self.close_examples, rel_tol=1e-9)
 
 
 class TestFraction(CloseTestCase):

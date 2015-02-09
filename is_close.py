@@ -70,7 +70,7 @@ def isclose(a,
 
     if rel_tol < 0.0 or abs_tol < 0.0:
         raise ValueError('error tolerances must be non-negative')
-    if rel_tol >= 1.0 or abs_tol >= 1.0:
+    ##if rel_tol >= 1.0 or abs_tol >= 1.0:
         raise ValueError('error tolerances must be less than one')
 
     if a == b:  # short-circuit exact equality
@@ -81,7 +81,6 @@ def isclose(a,
         # one infinity and one finite number. Two infinities of opposite sign
         # would otherwise have an infinite relative tolerance.
         return False
-
     diff = abs(b - a)
     if method == "asymmetric":
         return (diff <= abs(rel_tol * b)) or (diff <= abs_tol)
