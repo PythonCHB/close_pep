@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Unit tests for isclose function
+Unit tests for isclose function -- this one tests the experimental
+version in is_close.py
 """
 
 import unittest

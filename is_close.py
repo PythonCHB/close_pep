@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
 """
-An implementation for an isclose() function, for possible inclusion in
+
+Test implementation for an isclose() function, for possible inclusion in
 the Python standard library -- PEP0485
+
+This version has mutiple methods in it for experimentation and testing.
+
+The "final" version can be found in is_close.py
 
 This implementation is the result of much discussion on the python-ideas list
 in January, 2015:
@@ -70,8 +75,6 @@ def isclose(a,
 
     if rel_tol < 0.0 or abs_tol < 0.0:
         raise ValueError('error tolerances must be non-negative')
-    ##if rel_tol >= 1.0 or abs_tol >= 1.0:
-        raise ValueError('error tolerances must be less than one')
 
     if a == b:  # short-circuit exact equality
         return True
