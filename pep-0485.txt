@@ -1,4 +1,4 @@
-PEP: 485
+
 Title: A Function for testing approximate equality
 Version: $Revision$
 Last-Modified: $Date$
@@ -613,9 +613,9 @@ References
    http://www.boost.org/doc/libs/1_35_0/libs/test/doc/components/test_tools/floating_point_comparison.html
 
 .. [4] 1976. R. H. Lathwell. APL comparison tolerance. Proceedings of
-       the eighth international conference on APL Pages 255 - 258
+   the eighth international conference on APL Pages 255 - 258
 
-    http://dl.acm.org/citation.cfm?doid=800114.803685
+   http://dl.acm.org/citation.cfm?doid=800114.803685
 
 .. Bruce Dawson's discussion of floating point.
 
