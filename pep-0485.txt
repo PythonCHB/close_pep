@@ -3,7 +3,7 @@ Title: A Function for testing approximate equality
 Version: $Revision$
 Last-Modified: $Date$
 Author: Christopher Barker <Chris.Barker@noaa.gov>
-Status: Draft
+Status: Accepted
 Type: Standards Track
 Content-Type: text/x-rst
 Created: 20-Jan-2015
@@ -14,9 +14,9 @@ Post-History:
 Abstract
 ========
 
-This PEP proposes the addition of a function to the standard library
-that determines whether one value is approximately equal or "close" to
-another value.
+This PEP proposes the addition of a is_close() function to the standard
+library math module that determines whether one value is approximately equal
+or "close" to another value.
 
 
 Rationale
@@ -187,7 +187,7 @@ https://github.com/PythonCHB/close_pep/blob/master/is_close.py
 
 This implementation has a flag that lets the user select which
 relative tolerance test to apply -- this PEP does not suggest that
-that be retained, but rather than the weak test be selected.
+that be retained, but rather that the weak test be selected.
 
 There are also drafts of this PEP and test code, etc. there:
 
@@ -385,7 +385,7 @@ they yield the same result, but this proposal uses the boost "weak"
 test case: it is symmetric and provides a more useful result for very
 large tolerances.
 
-Large tolerances
+Large Tolerances
 ----------------
 
 The most common use case is expected to be small tolerances -- on order of the
