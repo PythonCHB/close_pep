@@ -7,7 +7,7 @@ the Python standard library -- PEP0485
 
 This version has mutiple methods in it for experimentation and testing.
 
-The "final" version can be found in is_close.py
+The "final" version can be found in isclose.py
 
 This implementation is the result of much discussion on the python-ideas list
 in January, 2015:
