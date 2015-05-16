@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Unit tests for isclose function -- this one tests the experimental
+Unit tests for isclose function -- this one tests the c
 version in is_close_module.py
 """
 
@@ -11,8 +11,11 @@ from is_close_module import isclose
 
 class ErrorTestCase(unittest.TestCase):
     """
-    Exceptions should be raised if either tolerance is set to less than zero
+    ValueError should be raised if either tolerance is set to less than zero
+
+    But maybe not bother?
     """
+
     def test_negative_tol(self):
         with self.assertRaises(ValueError):
             isclose(1, 1, -1e-100)
@@ -23,7 +26,9 @@ class ErrorTestCase(unittest.TestCase):
 
 
 class CloseTestCase(unittest.TestCase):
-    """ some methods that make it easier to test a bunch of values"""
+    """ some methods that make it easier to get a nice error message,
+        and/or test a bunch of values
+    """
 
     def do_close(self, a, b, *args, **kwargs):
         self.assertTrue(isclose(a, b, *args, **kwargs),
@@ -67,6 +72,7 @@ class ExactTestCase(CloseTestCase):
 
 class RelativeTestCase(CloseTestCase):
 
+    # examples that are close to 1e-8, but not 1e-9
     nums8 = [(1e8, 1e8 + 1),
              (-1e-8, -1.000000009e-8),
              (1.12345678, 1.12345679),
@@ -81,6 +87,7 @@ class RelativeTestCase(CloseTestCase):
 
 class ZeroTestCase(CloseTestCase):
 
+    # values close to zero
     nums0 = [(1e-9, 0.0),
              (-1e-9, 0.0),
              (-1e-150, 0.0),
@@ -96,13 +103,17 @@ class ZeroTestCase(CloseTestCase):
 
 
 class NonFiniteCase(CloseTestCase):
-    """ test for nan, inf, -inf """
+    """ tests for nan, inf, -inf """
+
     inf = float('inf')
     nan = float('nan')
+
+    # these are close regardless of tolerance -- i.e. they are equal
     close_examples = [(inf, inf),
                       (-inf, -inf),
                       ]
 
+    # these should never be close (following IEEE 754 rules for equality)
     not_close_examples = [(nan, nan),
                           (nan, 1e-100),
                           (1e-100, nan),
@@ -111,13 +122,51 @@ class NonFiniteCase(CloseTestCase):
                           (inf, -inf),
                           (inf, 1.0),
                           (1.0, inf),
+                          (inf, 1e308),
+                          (1e308, inf),
                           ]
 
     def test_close(self):
-        self.do_close_all(self.close_examples, abs_tol=0.999999999999999)  # largest tolerance possible
+        # zero tolerance -- only equal will be close
+        self.do_close_all(self.close_examples, abs_tol=0.0)
 
     def test_not_close(self):
-        self.do_not_close_all(self.not_close_examples, abs_tol=0.999999999999999)  # largest tolerance possible
+        # largest tolerance possible (or at least reasonable)
+        self.do_not_close_all(self.not_close_examples,
+                              abs_tol=0.999999999999999)
+
+
+class ZeroTolTest(CloseTestCase):
+    """
+    zero tolerance should not be close for anything except exactly equal
+    quantities
+    """
+    # these are close regardless of tolerance -- i.e. they are equal
+    close_examples = [(1.0, 1.0),
+                      (-3.4, -3.4),
+                      (-1e-300, -1e-300)
+                      ]
+    # these should never be close (following IEEE 754 rules for equality)
+    not_close_examples = [(nan, nan),
+                          (nan, 1e-100),
+                          (1e-100, nan),
+                          (inf, nan),
+                          (nan, inf),
+                          (inf, -inf),
+                          (inf, 1.0),
+                          (1.0, inf),
+                          (inf, 1e308),
+                          (1e308, inf),
+                          ]
+
+    def test_close(self):
+        # zero tolerance -- only equal will be close
+        self.do_close_all(self.close_examples, rel_tol=0.0)
+
+    def test_not_close(self):
+        # largest tolerance possible (or at least reasonable)
+        self.do_not_close_all(self.not_close_examples,
+                              rel_tol=0.0)
 
 
 class AsymetryTest(CloseTestCase):
@@ -127,10 +176,10 @@ class AsymetryTest(CloseTestCase):
 
     # should pass weak test both orders
     def test_close_weak(self):
-        self.assertTrue(isclose(9, 10, rel_tol=0.1))
+        self.do_close(9, 10, rel_tol=0.1)
 
     def test_close_weak_reversed(self):
-        self.assertTrue(isclose(10, 9, rel_tol=0.1))
+        self.do_close(10, 9, rel_tol=0.1)
 
 
 # class ComplexTests(CloseTestCase):
@@ -158,7 +207,8 @@ class AsymetryTest(CloseTestCase):
 #                       ]
 
 #     def test_close(self):
-#         self.assertTrue( isclose(do_close_all(self.close_examples, rel_tol=1e-8)
+#         self.assertTrue( isclose(do_close_all(self.close_examples,
+#                                               rel_tol=1e-8)
 
 #     def test_not_close(self):
 #         self.do_not_close_all(self.close_examples, rel_tol=1e-9)

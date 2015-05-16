@@ -24,10 +24,36 @@ isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
                                      ))
         return NULL;
 
+    /* sanity check on the inputs */
+    if (rel_tol < 0.0 || abs_tol < 0.0 ){
+        PyErr_SetString(PyExc_ValueError,
+                            "error tolerances must be non-negative");
+        return NULL;
+    }
+
     if ( a == b ){
-        /* short circuit exact equality -- why not?*/
+        /* short circuit exact equality -- needed to catch two
+           infinities of the same sign. And perhaps speeds things
+           up a bit sometimes.
+        */
         return PyBool_FromLong(1);
     }
+
+    /* This catches the case of two infinities of opposite sign, or
+       one infinity and one finite number. Two infinities of opposite
+       sign would otherwise have an infinite relative tolerance.
+
+       Two infinities of the same sign are caught by the equality check
+       above.
+    */
+
+    if (Py_IS_INFINITY(a) || Py_IS_INFINITY(b)){
+        return PyBool_FromLong(0);
+    }
+
+    /* now do the regular computation
+       this is essentially the "weak" test from the Boost library
+    */
 
     diff = fabs(b - a);
 
@@ -35,8 +61,6 @@ isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
                    (diff <= fabs(rel_tol * a))) ||
                    (diff <= abs_tol)) ;
 
-    /*(d1 <= p_fraction_tolerance && d2 <= p_fraction_tolerance)
-    */
     return PyBool_FromLong(result);
 }
 
