@@ -146,17 +146,9 @@ class ZeroTolTest(CloseTestCase):
                       (-3.4, -3.4),
                       (-1e-300, -1e-300)
                       ]
-    # these should never be close (following IEEE 754 rules for equality)
-    not_close_examples = [(nan, nan),
-                          (nan, 1e-100),
-                          (1e-100, nan),
-                          (inf, nan),
-                          (nan, inf),
-                          (inf, -inf),
-                          (inf, 1.0),
-                          (1.0, inf),
-                          (inf, 1e308),
-                          (1e308, inf),
+    # these should never be close
+    not_close_examples = [(1.0, 1.000000000000001),
+                          (1.0e200, .999999999999999e200),
                           ]
 
     def test_close(self):
