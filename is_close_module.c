@@ -2,9 +2,6 @@
 
 #include "Python.h"
 
-char *is_close_doc = "This will be the docstring, when I write it";
-
-
 
 static PyObject *
 isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -36,7 +33,7 @@ isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
            infinities of the same sign. And perhaps speeds things
            up a bit sometimes.
         */
-        return PyBool_FromLong(1);
+        Py_RETURN_TRUE;
     }
 
     /* This catches the case of two infinities of opposite sign, or
@@ -48,7 +45,7 @@ isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
     */
 
     if (Py_IS_INFINITY(a) || Py_IS_INFINITY(b)){
-        return PyBool_FromLong(0);
+        Py_RETURN_FALSE;
     }
 
     /* now do the regular computation
@@ -82,8 +79,8 @@ PyDoc_STRVAR(isclose_doc,
 "See PEP-0485 for a detailed description\n");
 
 static PyMethodDef IsCloseMethods[] = {
-    {"isclose", isclose_c, METH_VARARGS | METH_KEYWORDS,
-     isclose_doc},
+    {"isclose", (PyCFunction) isclose_c, METH_VARARGS | METH_KEYWORDS,
+     "determine if two floating point numbers are close"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

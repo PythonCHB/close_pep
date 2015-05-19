@@ -29,7 +29,7 @@ def isclose(a,
             b,
             rel_tol=1e-9,
             abs_tol=0.0,
-            method='strong'):
+            method='weak'):
     """
     returns True if a is close in value to b. False otherwise
 

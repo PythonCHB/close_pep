@@ -148,9 +148,10 @@ class ZeroTolTest(CloseTestCase):
                       (-3.4, -3.4),
                       (-1e-300, -1e-300)
                       ]
-    # these will not be close with zero tolerance
+    # these should never be close
     not_close_examples = [(1.0, 1.000000000000001),
                           (0.99999999999999, 1.0),
+                          (1.0e200, .999999999999999e200),
                           ]
 
     def test_close(self):
