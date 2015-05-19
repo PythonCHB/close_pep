@@ -64,9 +64,26 @@ isclose_c(PyObject *self, PyObject *args, PyObject *kwargs)
     return PyBool_FromLong(result);
 }
 
+PyDoc_STRVAR(isclose_doc,
+"Determine if two floating point numbers are  in value\n\n"
+
+"Returns True if a is close in value to b. False otherwise\n\n"
+":param a: one of the values to be tested\n\n"
+":param b: the other value to be tested\n\n"
+":param rel_tol=1e-9: The relative tolerance -- the amount of error\n"
+"                     allowed, relative to the magnitude of the input\n"
+"                     values.\n\n"
+":param abs_tol=0.0: The minimum absolute tolerance level -- useful for\n"
+"                    comparisons to zero.\n\n"
+"NOTES:\n"
+"-inf, inf and NaN behave similarly to the IEEE 754 Standard. That\n"
+"is, NaN is not close to anything, even itself. inf and -inf are\n"
+"only close to themselves.\n\n"
+"See PEP-0485 for a detailed description\n");
+
 static PyMethodDef IsCloseMethods[] = {
     {"isclose", isclose_c, METH_VARARGS | METH_KEYWORDS,
-     "determine if two floating point numbers are close"},
+     isclose_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

@@ -7,6 +7,8 @@ version in is_close_module.py
 
 import unittest
 from is_close_module import isclose
+from decimal import Decimal
+from fractions import Fraction
 
 
 class ErrorTestCase(unittest.TestCase):
@@ -146,17 +148,9 @@ class ZeroTolTest(CloseTestCase):
                       (-3.4, -3.4),
                       (-1e-300, -1e-300)
                       ]
-    # these should never be close (following IEEE 754 rules for equality)
-    not_close_examples = [(nan, nan),
-                          (nan, 1e-100),
-                          (1e-100, nan),
-                          (inf, nan),
-                          (nan, inf),
-                          (inf, -inf),
-                          (inf, 1.0),
-                          (1.0, inf),
-                          (inf, 1e308),
-                          (1e308, inf),
+    # these will not be close with zero tolerance
+    not_close_examples = [(1.0, 1.000000000000001),
+                          (0.99999999999999, 1.0),
                           ]
 
     def test_close(self):
@@ -201,45 +195,46 @@ class AsymetryTest(CloseTestCase):
 #         #     self.do_not_close(a, b, rel_tol=1e-14)
 
 
-# class TestInteger(CloseTestCase):
-#     close_examples = [(100000001, 100000000),
-#                       (123456789, 123456788)
-#                       ]
+class TestInteger(CloseTestCase):
+    close_examples = [(100000001, 100000000),
+                      (123456789, 123456788)
+                      ]
 
-#     def test_close(self):
-#         self.assertTrue( isclose(do_close_all(self.close_examples,
-#                                               rel_tol=1e-8)
+    def test_close(self):
+        self.do_close_all(self.close_examples, rel_tol=1e-8)
 
-#     def test_not_close(self):
-#         self.do_not_close_all(self.close_examples, rel_tol=1e-9)
-
-
-# class TestDecimal(CloseTestCase):
-#     close_examples = [(Decimal('1.00000001'), Decimal('1.0')),
-#                       (Decimal('1.00000001e-20'), Decimal('1.0e-20')),
-#                       (Decimal('1.00000001e-100'), Decimal('1.0e-100')),
-#                       ]
-
-#     def test_close(self):
-#         self.do_close_all(self.close_examples, rel_tol=Decimal('1e-8'))
-
-#     def test_not_close(self):
-#         self.do_not_close_all(self.close_examples, rel_tol=Decimal('1e-9'))
-
-#     # def test_close(self):
-#     #     self.do_close_all(self.close_examples, rel_tol=1e-8)
-
-#     # def test_not_close(self):
-#     #     self.do_not_close_all(self.close_examples, rel_tol=1e-9)
+    def test_not_close(self):
+        self.do_not_close_all(self.close_examples, rel_tol=1e-9)
 
 
-# class TestFraction(CloseTestCase):
-#     # could use some more here!
-#     close_examples = [(Fraction(1, 100000000) + 1, Fraction(1)),
-#                       ]
+class TestDecimal(CloseTestCase):
+    """
+    test some Decimal values
 
-#     def test_close(self):
-#         self.do_close_all(self.close_examples, rel_tol=1e-8)
+    note that these are converted to floats inside teh function
+    """
+    close_examples = [(Decimal('1.00000001'), Decimal('1.0')),
+                      (Decimal('1.00000001e-20'), Decimal('1.0e-20')),
+                      (Decimal('1.00000001e-100'), Decimal('1.0e-100')),
+                      ]
 
-#     def test_not_close(self):
-#         self.do_not_close_all(self.close_examples, rel_tol=1e-9)
+    def test_close(self):
+        self.do_close_all(self.close_examples, rel_tol=1e-8)
+
+    def test_not_close(self):
+        self.do_not_close_all(self.close_examples, rel_tol=1e-9)
+
+
+class TestFraction(CloseTestCase):
+    # could use some more here!
+    """
+    note that these are converted to floats internally
+    """
+    close_examples = [(Fraction(1, 100000000) + 1, Fraction(1)),
+                      ]
+
+    def test_close(self):
+        self.do_close_all(self.close_examples, rel_tol=1e-8)
+
+    def test_not_close(self):
+        self.do_not_close_all(self.close_examples, rel_tol=1e-9)
