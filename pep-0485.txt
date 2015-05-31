@@ -1,4 +1,3 @@
-
 Title: A Function for testing approximate equality
 Version: $Revision$
 Last-Modified: $Date$
@@ -9,6 +8,7 @@ Content-Type: text/x-rst
 Created: 20-Jan-2015
 Python-Version: 3.5
 Post-History:
+Resolution: https://mail.python.org/pipermail/python-dev/2015-February/138598.html
 
 
 Abstract
@@ -113,13 +113,13 @@ The primary use-case is expected to be floating point numbers.
 However, users may want to compare other numeric types similarly. In
 theory, it should work for any type that supports ``abs()``,
 multiplication, comparisons, and subtraction. However, the implimentation
-in teh math module is written in C, and thus can not (easily) use python's
+in the math module is written in C, and thus can not (easily) use python's
 duck typing. Rather, the values passed into the funciton will be converted
 to the float type before the calculation is performed. Passing in types
 (or values) that cannot be converted to floats will raise an appropirate
 Exception (TypeError, ValueError, or OverflowError).
 
-The code will be tested to accommodate at least some vlues of these types:
+The code will be tested to accommodate at least some values of these types:
 
 * ``Decimal``
 
@@ -127,7 +127,7 @@ The code will be tested to accommodate at least some vlues of these types:
 
 * ``Fraction``
 
-* ``complex``: For complex, a compmanion function will be added to the
+* ``complex``: For complex, a companion function will be added to the
   ``cmath`` module. In ``cmath.isclose()``, the tolerances are specified
   as floats, and the absolute value of the complex values
   will be used for scaling and comparison. If a complex tolerance is
