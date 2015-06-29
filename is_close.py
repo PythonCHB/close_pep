@@ -5,7 +5,7 @@
 Test implementation for an isclose() function, for possible inclusion in
 the Python standard library -- PEP0485
 
-This version has mutiple methods in it for experimentation and testing.
+This version has multiple methods in it for experimentation and testing.
 
 The "final" version can be found in isclose.py
 
@@ -55,7 +55,7 @@ def isclose(a,
 
     NOTES:
 
-    -inf, inf and NaN behave similarly to the IEEE 754 Standard. That
+    -inf, inf and NaN behave similar to the IEEE 754 standard. That
     -is, NaN is not close to anything, even itself. inf and -inf are
     -only close to themselves.
 
@@ -78,7 +78,7 @@ def isclose(a,
 
     if a == b:  # short-circuit exact equality
         return True
-    # use cmath so it will work with complex ot float
+    # use cmath so it will work with complex or float
     if cmath.isinf(a) or cmath.isinf(b):
         # This includes the case of two infinities of opposite sign, or
         # one infinity and one finite number. Two infinities of opposite sign
